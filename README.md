@@ -23,7 +23,7 @@ You can set up a schema with PREPARED XA TRANSACTIONS by running the script setu
 ```
 ./setup_test_xa_schema.sh
 ```
-This will PREPARE five XA transactions without commiting them. Run the script multiple times if you want more uncommitted transactions.
+This will create a schema `test_xa` with a table `xa_table` then PREPARE five XA transactions without commiting them. Run the script multiple times if you want more uncommitted transactions.
 
 ### Settling uncommited XA transactions.
 
