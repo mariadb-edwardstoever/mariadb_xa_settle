@@ -9,8 +9,11 @@ git clone https://github.com/mariadb-edwardstoever/mariadb_xa_settle.git
 wget https://github.com/mariadb-edwardstoever/mariadb_xa_settle/archive/refs/heads/main.zip
 ```
 
-## Overview
+### Overview
 This script is to commit or rollback all pending XA transactions that are in a state of PREPARE. It is possible for an XA transaction to remain unsettled even after a restart of the database instance. It is possible for XA transactions to remain uncommitted, blocking other transactions for a long time.
+
+### Use at your own risk
+This script is provided to you entirely for use at your own risk. 
 
 ### Connecting from the database host
 The most simple method for running Mariadb XA Settle is via unix_socket as root on the database host. If you want another user to connect to the database, add a user and password to the file `xa_settle.cnf`.
