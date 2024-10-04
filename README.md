@@ -1,7 +1,7 @@
 # Mariadb XA Settle
 Commit or rollback all unsettled XA transactions
 
-To download the mariadb_quick_review script direct to your linux server, you may use git or wget:
+To download the Mariadb XA Settle script direct to your linux server, you may use git or wget:
 ```
 git clone https://github.com/mariadb-edwardstoever/mariadb_xa_settle.git
 ```
