@@ -3,7 +3,6 @@
 # file distributed with mariadb_xa_settle
 # By Edward Stoever for MariaDB Support
 
-
 # Establish working directory 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source ${SCRIPT_DIR}/vsn.sh
@@ -15,6 +14,9 @@ TOOL="mariadb_xa_settle"
 COMMIT_SQL_FILE=$SQL_DIR/XA_COMMIT.sql
 ROLLBACK_SQL_FILE=$SQL_DIR/XA_ROLLBACK.sql
 
+# Default pause time between transactions
+PAUSE_TIME=2
+
 function display_help_message() {
 printf "SETTLE PREPARED XA TRANSACTIONS. 
 Script version $SCRIPT_VERSION
@@ -23,6 +25,7 @@ The following options are available.
    --report         # displays a report of prepared transactions not yet commit or rollback
    --commit_all     # commit all prepared XA transactions
    --rollback_all   # rollback all prepared XA transactions
+   --pause [seconds] # set pause time between each transaction (default is 2 seconds)
    --help           # Display the help menu
 Read the file README.md for more information.\n"
 }
@@ -64,13 +67,13 @@ if [ -z $CMD_MY_PRINT_DEFAULTS ]; then
   die "my_print_defaults command not available."
 fi
 
-
 for params in "$@"; do
 unset VALID; #REQUIRED
   if [ "$params" == '--commit_all' ]; then COMMIT='TRUE'; VALID=TRUE; fi
   if [ "$params" == '--report' ]; then REPORT='TRUE'; VALID=TRUE; fi
   if [ "$params" == '--rollback_all' ]; then ROLLBACK='TRUE'; VALID=TRUE; fi
   if [ "$params" == '--interactive' ]; then INTERACTIVE='TRUE'; VALID=TRUE; fi
+  if [ "$params" == '--pause' ]; then shift; PAUSE_TIME="$1"; VALID=TRUE; fi
   if [ "$params" == '--help' ]; then HELP=TRUE; VALID=TRUE; fi
   if [ ! $VALID ] && [ ! $INVALID_INPUT ];  then  INVALID_INPUT="$params"; fi
 done
@@ -81,10 +84,10 @@ if [ ! $COMMIT ] && [ ! $ROLLBACK ] && [ ! $REPORT ]; then display_help_message;
 if [ $REPORT ] && [ $COMMIT ]; then display_help_message; die "You must choose commit_all or report.  Choose only one."; fi
 if [ $REPORT ] && [ $ROLLBACK ]; then display_help_message; die "You must choose rollback_all or report. Choose only one."; fi
 
-  CONNECTING_AS=$($CMD_MARIADB $CLOPTS -ABNe "select user();") || ERR=true
-  if [ $ERR ]; then die "Something went wrong (CONNECTING_AS)!";  fi 
-  echo "Connecting as user $CONNECTING_AS."
-  
+CONNECTING_AS=$($CMD_MARIADB $CLOPTS -ABNe "select user();") || ERR=true
+if [ $ERR ]; then die "Something went wrong (CONNECTING_AS)!";  fi 
+echo "Connecting as user $CONNECTING_AS."
+
 if [ $REPORT ]; then 
   unset ERR;
   LIST_OF_PREPARED_XA=$($CMD_MARIADB $CLOPTS -ABNe "xa recover format='SQL'"| awk '{print $4}') || ERR=true
@@ -108,6 +111,7 @@ unset ERR;
       $CMD_MARIADB $CLOPTS -e "$SQL"  || ERR=true
       if [ $ERR ]; then die "Something went wrong (SQL_ROLLBACK)!";  fi
       ((ii++));
+      sleep $PAUSE_TIME
     done <<< "$LIST_OF_PREPARED_XA"
     printf "Rollback of $ii XA transactions completed.\n"
   fi
@@ -119,6 +123,7 @@ unset ERR;
       $CMD_MARIADB $CLOPTS -e "$SQL"  || ERR=true
       ((ii++));
       if [ $ERR ]; then die "Something went wrong (SQL_COMMIT)!";  fi
+      sleep $PAUSE_TIME
     done <<< "$LIST_OF_PREPARED_XA"
     printf "Commit of $ii XA transactions completed.\n"
   fi
