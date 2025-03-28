@@ -13,7 +13,7 @@ wget https://github.com/mariadb-edwardstoever/mariadb_xa_settle/archive/refs/hea
 This script is to commit or rollback all pending XA transactions that are in a state of PREPARE. It is possible for an XA transaction to remain unsettled even after a restart of the database instance. It is possible for XA transactions to remain uncommitted, blocking other transactions for a long time.
 
 ### Use at your own risk
-This script is provided to you entirely for use at your own risk. 
+This script is provided to you entirely for use at your own risk.
 
 ### Connecting from the database host
 The most simple method for running Mariadb XA Settle is via unix_socket as root on the database host. If you want another user to connect to the database, add a user and password to the file `xa_settle.cnf`.
@@ -31,12 +31,11 @@ Use the script `mariadb_xa_settle.sh` to settle transactions.
 
 ### Examples of running the script on the command line
 ```
-./mariadb_xa_settle.sh --help
-./mariadb_xa_settle.sh --report
-./mariadb_xa_settle.sh --commit_all
-./mariadb_xa_settle.sh --rollback_all
+$1--rollback_all
+./mariadb_xa_settle.sh --rollback_all --pause 5
 ./mariadb_xa_settle.sh --interactive --commit_all
 ./mariadb_xa_settle.sh --interactive --rollback_all
+./mariadb_xa_settle.sh --commit_all --pause 5
 ```
 
 ### Available Options
@@ -46,12 +45,14 @@ The following options are available.
    --report         # displays a report of prepared transactions not yet commit or rollback
    --commit_all     # commit all prepared XA transactions
    --rollback_all   # rollback all prepared XA transactions
+   --pause [seconds] # set pause time between each transaction (default is 2 seconds)
    --help           # Display the help menu
 ```
 The script can be called by another script like a command, or in human interactive mode with the flag `--interactive`
 
-### cleanup after testing. 
+### cleanup after testing.
 Run the script `cleanup_test_xa_schema.sh` to drop the schema test_xa. Example:
 ```
 ./cleanup_test_xa_schema.sh
 ```
+
